@@ -69,6 +69,15 @@ public class UserManagerImpl implements UserManager {
     }
 
     @Override
+    public UserDTO findUserByUsername(String username) throws BusinessException {
+        User user= userDao.findByUsername(username);
+        if (user == null) {
+            throw new BusinessException("UserBusinessException02", "No user with this username was found!");
+        }
+        return UserDTOEntityMapper.getDTOFromUser(user);
+    }
+
+    @Override
     public UserDTO insertUser(UserDTO userDTO) throws ValidationException, BusinessException {
         UserValidator.validate(userDTO);
 
@@ -126,13 +135,13 @@ public class UserManagerImpl implements UserManager {
 
     @Override
     public UserDTO deactivateUser(String username) throws BusinessException{
-        User persistedUser = userDao.findUserByUsername(username);
+        User persistedUser = userDao.findByUsername(username);
 
         if (persistedUser == null)
             throw new BusinessException("UserBusinessException05", "No user with this username was found!");
 
         this.userDao.deactivateUser(username);
-        UserDTO persistedUserDTO = UserDTOEntityMapper.getDTOFromUser(userDao.findUserByUsername(username));
+        UserDTO persistedUserDTO = UserDTOEntityMapper.getDTOFromUser(userDao.findByUsername(username));
 
         this.notificationManager.insertDeactivatedUserNotification(persistedUserDTO);
 
@@ -141,7 +150,7 @@ public class UserManagerImpl implements UserManager {
 
     @Override
     public UserDTO activateUser(String username) throws BusinessException, ValidationException {
-        User persistedUser = userDao.findUserByUsername(username);
+        User persistedUser = userDao.findByUsername(username);
 
         if (persistedUser == null)
             throw new BusinessException("UserBusinessException06", "No user with this username was found!");
@@ -149,7 +158,7 @@ public class UserManagerImpl implements UserManager {
         String newPassword = PasswordUtils.generatePassword();
         String hashedNewPassword = PasswordUtils.hash(newPassword);
         this.userDao.activateUser(username, hashedNewPassword);
-        UserDTO persistedUserDTO = UserDTOEntityMapper.getDTOFromUser(userDao.findUserByUsername(username));
+        UserDTO persistedUserDTO = UserDTOEntityMapper.getDTOFromUser(userDao.findByUsername(username));
 
         this.emailUtils.sendNewPasswordMessage(persistedUserDTO);
 
@@ -193,7 +202,7 @@ public class UserManagerImpl implements UserManager {
         int charPosition = 0;
         String username = (firstPart + firstName.charAt(charPosition)).toLowerCase();
 
-        while(userDao.findUserByUsername(username) != null){
+        while(userDao.findByUsername(username) != null){
             charPosition++;
             if(charPosition < firstName.length()){
                 username = (username + firstName.charAt(charPosition)).toLowerCase();

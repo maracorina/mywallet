@@ -3,7 +3,6 @@ package wllt.manager.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import wllt.dao.CategoryDao;
-import wllt.dao.TransactionDao;
 import wllt.dao.UserCategoryDao;
 import wllt.dao.UserDao;
 import wllt.dto.TransactionDTO;
@@ -12,15 +11,19 @@ import wllt.dto.entityMappers.TransactionDTOEntityMapper;
 import wllt.entities.Category;
 import wllt.entities.Transaction;
 import wllt.entities.User;
+import wllt.dao.TransactionDao;
+import wllt.entities.types.CategoryType;
 import wllt.entities.utils.UserCategoryId;
 import wllt.exceptions.BusinessException;
 import wllt.exceptions.ValidationException;
 import wllt.manager.remote.TransactionsManager;
 import wllt.validators.TransactionValidator;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Component
 public class TransactionsManagerImpl implements TransactionsManager {
@@ -48,7 +51,8 @@ public class TransactionsManagerImpl implements TransactionsManager {
      */
     @Override
     public TransactionDTO insertTransaction(TransactionDTO transactionDTO) throws BusinessException, ValidationException {
-        if (this.userDao.findAllByID(transactionDTO.getUser().getID()) == null) {
+        User user = this.userDao.findAllByID(transactionDTO.getUser().getID());
+        if (user == null) {
             throw new BusinessException("TransactionBusinessException01", "No user with this id was found!");
         }
 
@@ -61,7 +65,10 @@ public class TransactionsManagerImpl implements TransactionsManager {
             throw new BusinessException("TransactionBusinessException03", "No category with this id was assigned to this user");
         }
         TransactionValidator.validate(transactionDTO);
-        Transaction persistedTransaction = this.transactionDao.save(TransactionDTOEntityMapper.getTransactionFromTransactionDTO(transactionDTO));
+        Transaction transaction = TransactionDTOEntityMapper.getTransactionFromTransactionDTO(transactionDTO);
+        transaction.setUser(user);
+        transaction.setDate(LocalDate.now());
+        Transaction persistedTransaction = this.transactionDao.save(transaction);
         persistedTransaction = this.transactionDao.findAllByID(persistedTransaction.getID());
         return TransactionDTOEntityMapper.getDTOFromTransaction(persistedTransaction);
     }
@@ -76,11 +83,16 @@ public class TransactionsManagerImpl implements TransactionsManager {
     }
 
     @Override
-    public List<TransactionDTO> getUserTransactions(Integer userId) throws BusinessException {
-        if (this.userDao.findAllByID(userId) == null) {
-            throw new BusinessException("TransactionBusinessException04", "No user with this id was found!");
+    public List<TransactionDTO> getUserTransactions(String username) throws BusinessException {
+        User user = this.userDao.findByUsername(username);
+        if (user == null) {
+            throw new BusinessException("TransactionBusinessException04", "No user with this username was found!");
         }
-        List<Transaction> transactions = this.transactionDao.findByUserID(userId);
+        List<Transaction> transactions = this.transactionDao.findByUserID(user.getID()).
+                stream().
+                filter(transaction -> transaction.getCategory().getType().equals(CategoryType.BUDGET) ||
+                        transaction.getCategory().getType().equals(CategoryType.CATEGORY)).
+                collect(Collectors.toList());
         return TransactionDTOEntityMapper.getTransactionDTOListFromTransactionList(transactions);
     }
 
@@ -95,5 +107,25 @@ public class TransactionsManagerImpl implements TransactionsManager {
         }
         List<Transaction> transactions = this.transactionDao.findByUserIDAndCategoryID(userId, categoryId);
         return TransactionDTOEntityMapper.getTransactionDTOListFromTransactionList(transactions);
+    }
+
+    @Override
+    public Double getSpentAmountByUsername(String username) {
+        Double totalAmount = 0d;
+        Double budgetAmount = this.transactionDao.getTotalSumByTypeAndUsername(CategoryType.BUDGET, username);
+        if(budgetAmount != null)
+            totalAmount += budgetAmount;
+        Double categoryAmount = this.transactionDao.getTotalSumByTypeAndUsername(CategoryType.CATEGORY, username);
+        if(categoryAmount != null)
+            totalAmount += categoryAmount;
+        return totalAmount;
+    }
+
+    @Override
+    public Double getIncomeAmountByUsername(String username) {
+        Double income = this.transactionDao.getTotalSumByTypeAndUsername(CategoryType.INCOME, username);
+        if(income != null)
+            return income;
+        return 0d;
     }
 }

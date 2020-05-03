@@ -18,7 +18,12 @@ public interface TransactionsManager {
 
     TransactionDTO findTransaction(Integer id) throws BusinessException;
 
-    List<TransactionDTO> getUserTransactions(Integer userId) throws BusinessException;
+    List<TransactionDTO> getUserTransactions(String username) throws BusinessException;
 
     List<TransactionDTO> getUserCategoryTransactions(Integer userId, Integer categoryId) throws BusinessException;
+
+    Double getSpentAmountByUsername(String username);
+
+    Double getIncomeAmountByUsername(String username);
+
 }

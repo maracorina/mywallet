@@ -20,4 +20,8 @@ public interface CategoryManager {
     UserCategoryDTO updateUserCategoryPriority(UserCategoryDTO userCategoryDTO) throws ValidationException, BusinessException;
 
     CategoryDTO getCategory(Integer id) throws BusinessException;
+
+    List<CategoryDTO> getAllByUsername(String username);
+
+    List<CategoryDTO> getAllOutCategoriesByUsername(String username);
 }

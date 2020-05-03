@@ -5,7 +5,9 @@ import wllt.dto.NotificationDTO;
 import wllt.entities.Category;
 import wllt.entities.Notification;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -46,8 +48,8 @@ public class CategoryDTOEntityMapper {
 
     }
 
-    public static Set<CategoryDTO> getCategoryDTOListFromCategoryList(Set<Category> categorys) {
-        Set<CategoryDTO> categoryDTOS = new HashSet<>();
+    public static List<CategoryDTO> getCategoryDTOListFromCategoryList(List<Category> categorys) {
+        List<CategoryDTO> categoryDTOS = new ArrayList<>();
 
         for (Category category : categorys) {
             categoryDTOS.add(getDTOFromCategory(category));

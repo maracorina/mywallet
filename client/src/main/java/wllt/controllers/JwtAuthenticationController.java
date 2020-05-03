@@ -8,6 +8,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import wllt.AuthResponse;
 import wllt.dto.TokenDTO;
 import wllt.dto.UserDTO;
 import wllt.entities.Token;
@@ -67,14 +68,17 @@ public class JwtAuthenticationController {
 
             UserDTO loggedUser = userManager.findUserByUsernameAndPassword(username, password);
 
-            if(loggedUser != null) {
-                loggedUser.setToken(t.getToken());
-            }
+            AuthResponse reponse = new AuthResponse(t.getToken(), loggedUser);
 
-            return ResponseEntity.ok(loggedUser);
+            return ResponseEntity.ok(reponse);
 
         } catch (Exception e){
-            return ResponseEntity.status(401).body(e.getMessage());
+            try{
+                userManager.findUserByUsername(username);
+                return ResponseEntity.status(401).body("No user with this username and password was found!");
+            } catch (BusinessException be){
+                return ResponseEntity.status(401).body(be.getMessage());
+            }
         }
     }
 

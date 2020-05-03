@@ -30,7 +30,7 @@ public class JwtService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        wllt.entities.User user = userDao.findUserByUsername(username);
+        wllt.entities.User user = userDao.findByUsername(username);
         if (user == null) {
             throw new UsernameNotFoundException("User not found with username: " + username);
         }

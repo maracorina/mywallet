@@ -13,12 +13,16 @@ import wllt.dto.entityMappers.UserCategoryDTOEntityMapper;
 import wllt.dto.entityMappers.UserDTOEntityMapper;
 import wllt.entities.Category;
 import wllt.entities.UserCategory;
+import wllt.entities.types.CategoryType;
 import wllt.entities.utils.UserCategoryId;
 import wllt.exceptions.BusinessException;
 import wllt.exceptions.ValidationException;
 import wllt.manager.remote.CategoryManager;
 import wllt.manager.remote.NotificationManager;
 import wllt.validators.CategoryValidator;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class CategoryManagerImpl implements CategoryManager {
@@ -52,6 +56,26 @@ public class CategoryManagerImpl implements CategoryManager {
         }
 
         return CategoryDTOEntityMapper.getDTOFromCategory(category);
+    }
+
+    @Override
+    public List<CategoryDTO> getAllByUsername(String username) {
+        List<Integer> categoriesIds = this.userCategoryDao.findAllByUserUsername(username).
+                stream().
+                map(userCategory -> userCategory.getCategory().getID()).
+                collect(Collectors.toList());
+        return CategoryDTOEntityMapper.getCategoryDTOListFromCategoryList(this.categoryDao.findAllByIDIn(categoriesIds));
+    }
+
+    @Override
+    public List<CategoryDTO> getAllOutCategoriesByUsername(String username) {
+        List<Integer> categoriesIds = this.userCategoryDao.findAllByUserUsername(username).
+                stream().
+                filter(userCategory -> userCategory.getCategory().getType().equals(CategoryType.BUDGET) ||
+                        userCategory.getCategory().getType().equals(CategoryType.CATEGORY)).
+                map(userCategory -> userCategory.getCategory().getID()).
+                collect(Collectors.toList());
+        return CategoryDTOEntityMapper.getCategoryDTOListFromCategoryList(this.categoryDao.findAllByIDIn(categoriesIds));
     }
 
     @Override

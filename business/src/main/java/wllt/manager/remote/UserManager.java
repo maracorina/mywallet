@@ -20,6 +20,8 @@ public interface UserManager {
 
     UserDTO findUserByUsernameAndPassword(String username, String password) throws BusinessException;
 
+    UserDTO findUserByUsername(String username) throws BusinessException;
+
     UserDTO insertUser(UserDTO userDTO) throws ValidationException, BusinessException;
 
     UserCategoryDTO insertUserCategory(UserCategoryDTO userCategoryDTO) throws ValidationException, BusinessException;

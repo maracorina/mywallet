@@ -1,0 +1,35 @@
+package wllt;
+
+import wllt.dto.UserDTO;
+
+import java.io.Serializable;
+
+public class AuthResponse implements Serializable {
+
+    private String token;
+    private UserDTO user;
+
+    public AuthResponse() {
+    }
+
+    public AuthResponse(String token, UserDTO user) {
+        this.token = token;
+        this.user = user;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public UserDTO getUser() {
+        return user;
+    }
+
+    public void setUser(UserDTO user) {
+        this.user = user;
+    }
+}

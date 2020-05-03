@@ -24,7 +24,7 @@ public interface UserDao extends CrudRepository<User, Integer> {
 
     List<User> findAll();
 
-    User findUserByUsername(String username);
+    User findByUsername(String username);
 
     User findByUsernameAndPassword(String username, String password);
 

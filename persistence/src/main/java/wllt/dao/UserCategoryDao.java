@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import wllt.entities.Category;
 import wllt.entities.UserCategory;
 import wllt.entities.utils.UserCategoryId;
 
@@ -23,6 +22,8 @@ public interface UserCategoryDao extends CrudRepository<UserCategory, Integer> {
     UserCategory findAllByID(UserCategoryId id);
 
     List<UserCategory> findAll();
+
+    List<UserCategory> findAllByUserUsername(String username);
 
     @Transactional
     @Modifying

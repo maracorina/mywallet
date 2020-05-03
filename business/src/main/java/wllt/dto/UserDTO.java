@@ -13,9 +13,6 @@ import java.util.Set;
  */
 public class UserDTO implements Serializable {
 
-    //keep token string
-    private String token;
-
     private Integer ID;
     private String firstName;
     private String lastName;
@@ -29,8 +26,7 @@ public class UserDTO implements Serializable {
     public UserDTO() {
     }
 
-    public UserDTO(String token, Integer ID, String firstName, String lastName, String username, String password, Integer counter, String email, String mobileNumber, StatusType status) {
-        this.token = token;
+    public UserDTO(Integer ID, String firstName, String lastName, String username, String password, Integer counter, String email, String mobileNumber, StatusType status) {
         this.ID = ID;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -112,51 +108,5 @@ public class UserDTO implements Serializable {
 
     public void setStatus(StatusType status) {
         this.status = status;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserDTO userDTO = (UserDTO) o;
-        return Objects.equals(token, userDTO.token) &&
-                Objects.equals(ID, userDTO.ID) &&
-                Objects.equals(firstName, userDTO.firstName) &&
-                Objects.equals(lastName, userDTO.lastName) &&
-                Objects.equals(username, userDTO.username) &&
-                Objects.equals(password, userDTO.password) &&
-                Objects.equals(counter, userDTO.counter) &&
-                Objects.equals(email, userDTO.email) &&
-                Objects.equals(mobileNumber, userDTO.mobileNumber) &&
-                status == userDTO.status;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(token, ID, firstName, lastName, username, password, counter, email, mobileNumber, status);
-    }
-
-    @Override
-    public String toString() {
-        return "UserDTO{" +
-                "token='" + token + '\'' +
-                ", ID=" + ID +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", counter=" + counter +
-                ", email='" + email + '\'' +
-                ", mobileNumber='" + mobileNumber + '\'' +
-                ", status=" + status +
-                '}';
     }
 }

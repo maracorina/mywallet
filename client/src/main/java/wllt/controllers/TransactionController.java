@@ -10,9 +10,11 @@ import wllt.dto.UserCategoryDTO;
 import wllt.entities.Transaction;
 import wllt.exceptions.BusinessException;
 import wllt.exceptions.ValidationException;
+import wllt.jwt.config.JwtTokenUtil;
 import wllt.manager.remote.TransactionsManager;
 
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +30,8 @@ public class TransactionController extends HttpServlet {
 
     @Autowired
     public TransactionsManager transactionManager;
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
     public TransactionController(TransactionsManager transactionManagerRemote) {
         this.transactionManager = transactionManagerRemote;
@@ -47,20 +51,30 @@ public class TransactionController extends HttpServlet {
     /**
      * The Controller returns an array of {@link TransactionDTO} Objects that
      *      * map all the {@link wllt.entities.Transaction} objects from the database
-     *      * corresponding to the user with the given id
+     *      * corresponding to the user
      *
-     * @param userId is an {@link Integer} the user id
+     * @param token the token
      * @return a success response containing the array
      * @throws {@link BusinessException} bubbles up to here from {@link TransactionsManager}
      *      *                and we return an ERROR response to the client containing the thrown exception
      */
-    @GetMapping(path="/user/{userId}", produces = "application/json")
-    public ResponseEntity<?> getUserTransactions(@PathVariable("userId") Integer userId){
-        try {
-            List<TransactionDTO> transactionDTOS = this.transactionManager.getUserTransactions(userId);
-            return ResponseEntity.ok(transactionDTOS);
-        } catch (BusinessException e){
-            return ResponseEntity.status(500).body(e.getMessage());
+    @GetMapping(path="/user", produces = "application/json")
+    public ResponseEntity<?> getUserTransactions(@RequestHeader (name="Authorization") String token){
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+            String username = this.jwtTokenUtil.getUsernameFromToken(token);
+            if (username != null) {
+                try {
+                    List<TransactionDTO> transactionDTOS = this.transactionManager.getUserTransactions(username);
+                    return ResponseEntity.ok(transactionDTOS);
+                } catch (BusinessException e){
+                    return ResponseEntity.status(500).body(e.getMessage());
+                }
+            } else {
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+        } else {
+            return ResponseEntity.status(401).body("Unauthorized");
         }
     }
 
@@ -104,6 +118,39 @@ public class TransactionController extends HttpServlet {
             return ResponseEntity.ok(transactionDTO);
         } catch (BusinessException e) {
             return ResponseEntity.status(500).body(e.getMessage());
+        }
+    }
+
+
+    @GetMapping(path="/spent-amount", produces = "application/json")
+    public ResponseEntity<?> getSpentAmount(@RequestHeader (name="Authorization") String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+            String username = this.jwtTokenUtil.getUsernameFromToken(token);
+            if (username != null) {
+                Double amount = this.transactionManager.getSpentAmountByUsername(username);
+                return ResponseEntity.status(200).body(amount);
+            } else {
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+        } else {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+    }
+
+    @GetMapping(path="/total-budget", produces = "application/json")
+    public ResponseEntity<?> getTotalBudgetAmount(@RequestHeader (name="Authorization") String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+            String username = this.jwtTokenUtil.getUsernameFromToken(token);
+            if (username != null) {
+                Double amount = this.transactionManager.getIncomeAmountByUsername(username);
+                return ResponseEntity.status(200).body(amount);
+            } else {
+                return ResponseEntity.status(401).body("Unauthorized");
+            }
+        } else {
+            return ResponseEntity.status(401).body("Unauthorized");
         }
     }
 }
